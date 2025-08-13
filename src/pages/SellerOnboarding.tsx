@@ -1,0 +1,335 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AppLayout } from '@/components/layout/AppLayout';
+import { FormStepper } from '@/components/common/FormStepper';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/hooks/use-toast';
+import { industryOptions, SellerProfile } from '@/data/mockData';
+
+const steps = [
+  { id: 'personal', title: 'Owner Info', description: 'Personal details' },
+  { id: 'business', title: 'Business Info', description: 'Company details' },
+  { id: 'financials', title: 'Financials', description: 'Revenue & valuation' },
+  { id: 'review', title: 'Review', description: 'Confirm details' }
+];
+
+const SellerOnboarding = () => {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [formData, setFormData] = useState<Partial<SellerProfile>>({
+    name: '',
+    email: '',
+    businessName: '',
+    industry: '',
+    revenue: '',
+    askingPrice: '',
+    location: '',
+    founded: '',
+    employees: ''
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validateStep = (step: number): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    switch (step) {
+      case 0: // Personal Info
+        if (!formData.name?.trim()) newErrors.name = 'Name is required';
+        if (!formData.email?.trim()) newErrors.email = 'Email is required';
+        break;
+      case 1: // Business Info
+        if (!formData.businessName?.trim()) newErrors.businessName = 'Business name is required';
+        if (!formData.industry) newErrors.industry = 'Industry is required';
+        if (!formData.location?.trim()) newErrors.location = 'Location is required';
+        if (!formData.founded?.trim()) newErrors.founded = 'Founded year is required';
+        if (!formData.employees) newErrors.employees = 'Employee count is required';
+        break;
+      case 2: // Financials
+        if (!formData.revenue?.trim()) newErrors.revenue = 'Revenue is required';
+        if (!formData.askingPrice?.trim()) newErrors.askingPrice = 'Asking price is required';
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        handleSubmit();
+      }
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleSubmit = () => {
+    // Save to localStorage (in real app, would send to backend)
+    const existingSellers = JSON.parse(localStorage.getItem('sellers') || '[]');
+    const newSeller = {
+      ...formData,
+      id: Date.now().toString()
+    };
+    localStorage.setItem('sellers', JSON.stringify([...existingSellers, newSeller]));
+    
+    toast({
+      title: 'Business Listed Successfully!',
+      description: 'Your business is now visible to potential buyers.',
+    });
+    
+    navigate('/dashboard');
+  };
+
+  const updateFormData = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0: // Personal Info
+        return (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name *</Label>
+              <Input
+                id="name"
+                value={formData.name || ''}
+                onChange={(e) => updateFormData('name', e.target.value)}
+                placeholder="Enter your full name"
+                className={errors.name ? 'border-destructive' : ''}
+              />
+              {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email || ''}
+                onChange={(e) => updateFormData('email', e.target.value)}
+                placeholder="Enter your email address"
+                className={errors.email ? 'border-destructive' : ''}
+              />
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+            </div>
+          </div>
+        );
+
+      case 1: // Business Info
+        return (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="businessName">Business Name *</Label>
+              <Input
+                id="businessName"
+                value={formData.businessName || ''}
+                onChange={(e) => updateFormData('businessName', e.target.value)}
+                placeholder="Enter your business name"
+                className={errors.businessName ? 'border-destructive' : ''}
+              />
+              {errors.businessName && <p className="text-sm text-destructive">{errors.businessName}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Industry *</Label>
+              <Select value={formData.industry || ''} onValueChange={(value) => updateFormData('industry', value)}>
+                <SelectTrigger className={errors.industry ? 'border-destructive' : ''}>
+                  <SelectValue placeholder="Select industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  {industryOptions.map((industry) => (
+                    <SelectItem key={industry} value={industry}>
+                      {industry}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.industry && <p className="text-sm text-destructive">{errors.industry}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Location *</Label>
+              <Input
+                id="location"
+                value={formData.location || ''}
+                onChange={(e) => updateFormData('location', e.target.value)}
+                placeholder="City, State/Country"
+                className={errors.location ? 'border-destructive' : ''}
+              />
+              {errors.location && <p className="text-sm text-destructive">{errors.location}</p>}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="founded">Year Founded *</Label>
+                <Input
+                  id="founded"
+                  value={formData.founded || ''}
+                  onChange={(e) => updateFormData('founded', e.target.value)}
+                  placeholder="e.g., 2019"
+                  className={errors.founded ? 'border-destructive' : ''}
+                />
+                {errors.founded && <p className="text-sm text-destructive">{errors.founded}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Number of Employees *</Label>
+                <Select value={formData.employees || ''} onValueChange={(value) => updateFormData('employees', value)}>
+                  <SelectTrigger className={errors.employees ? 'border-destructive' : ''}>
+                    <SelectValue placeholder="Select range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1-10">1-10</SelectItem>
+                    <SelectItem value="11-25">11-25</SelectItem>
+                    <SelectItem value="26-50">26-50</SelectItem>
+                    <SelectItem value="51-100">51-100</SelectItem>
+                    <SelectItem value="101-250">101-250</SelectItem>
+                    <SelectItem value="250+">250+</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.employees && <p className="text-sm text-destructive">{errors.employees}</p>}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 2: // Financials
+        return (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="revenue">Annual Revenue *</Label>
+              <Input
+                id="revenue"
+                value={formData.revenue || ''}
+                onChange={(e) => updateFormData('revenue', e.target.value)}
+                placeholder="e.g., $2.5M ARR"
+                className={errors.revenue ? 'border-destructive' : ''}
+              />
+              {errors.revenue && <p className="text-sm text-destructive">{errors.revenue}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="askingPrice">Asking Price *</Label>
+              <Input
+                id="askingPrice"
+                value={formData.askingPrice || ''}
+                onChange={(e) => updateFormData('askingPrice', e.target.value)}
+                placeholder="e.g., $12M"
+                className={errors.askingPrice ? 'border-destructive' : ''}
+              />
+              {errors.askingPrice && <p className="text-sm text-destructive">{errors.askingPrice}</p>}
+            </div>
+
+            <div className="p-4 bg-neutral-50 rounded-lg">
+              <h4 className="font-medium text-neutral-900 mb-2">Next Steps</h4>
+              <ul className="text-sm text-neutral-600 space-y-1">
+                <li>• Financial documents will be requested during due diligence</li>
+                <li>• A confidential information memorandum (CIM) will be prepared</li>
+                <li>• Interested buyers will sign NDAs before accessing detailed information</li>
+              </ul>
+            </div>
+          </div>
+        );
+
+      case 3: // Review
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h4 className="font-semibold text-neutral-900">Owner Information</h4>
+                <div className="space-y-2 text-sm">
+                  <p><span className="font-medium">Name:</span> {formData.name}</p>
+                  <p><span className="font-medium">Email:</span> {formData.email}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-semibold text-neutral-900">Business Details</h4>
+                <div className="space-y-2 text-sm">
+                  <p><span className="font-medium">Business Name:</span> {formData.businessName}</p>
+                  <p><span className="font-medium">Industry:</span> {formData.industry}</p>
+                  <p><span className="font-medium">Location:</span> {formData.location}</p>
+                  <p><span className="font-medium">Founded:</span> {formData.founded}</p>
+                  <p><span className="font-medium">Employees:</span> {formData.employees}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-semibold text-neutral-900">Financial Information</h4>
+                <div className="space-y-2 text-sm">
+                  <p><span className="font-medium">Annual Revenue:</span> {formData.revenue}</p>
+                  <p><span className="font-medium">Asking Price:</span> {formData.askingPrice}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <AppLayout>
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-neutral-900">List Your Business</h1>
+          <p className="text-neutral-600 mt-2">
+            Complete your business profile to connect with qualified buyers
+          </p>
+        </div>
+
+        {/* Stepper */}
+        <FormStepper steps={steps} currentStep={currentStep} />
+
+        {/* Form Content */}
+        <Card className="shadow-elevated">
+          <CardHeader>
+            <CardTitle>{steps[currentStep].title}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {renderStepContent()}
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-between pt-6 border-t border-neutral-200">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                disabled={currentStep === 0}
+              >
+                Back
+              </Button>
+              <Button
+                variant="corporate"
+                onClick={handleNext}
+              >
+                {currentStep === steps.length - 1 ? 'List Business' : 'Next'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default SellerOnboarding;

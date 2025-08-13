@@ -8,51 +8,82 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Caprae Capital Professional Theme */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 220 39% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 39% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 39% 11%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Corporate Blue Primary */
+    --primary: 214 100% 37%;
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 214 100% 32%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Professional Secondary */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 220 39% 11%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Success Green */
+    --accent: 159 100% 29%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 214 100% 37%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
+    /* Professional Navigation */
+    --sidebar-background: 220 39% 11%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 214 100% 37%;
     --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 220 39% 16%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 220 39% 16%;
+    --sidebar-ring: 214 100% 37%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Custom Professional Colors */
+    --corporate-blue: 214 100% 37%;
+    --corporate-blue-light: 214 100% 42%;
+    --corporate-blue-dark: 214 100% 32%;
+    --success-green: 159 100% 29%;
+    --success-green-light: 159 100% 34%;
+    --warning-amber: 43 100% 50%;
+    --neutral-50: 210 40% 98%;
+    --neutral-100: 210 40% 96%;
+    --neutral-200: 214 32% 91%;
+    --neutral-300: 213 27% 84%;
+    --neutral-400: 215 20% 65%;
+    --neutral-500: 215 16% 47%;
+    --neutral-600: 215 19% 35%;
+    --neutral-700: 215 25% 27%;
+    --neutral-800: 217 33% 17%;
+    --neutral-900: 220 39% 11%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--corporate-blue)), hsl(var(--corporate-blue-light)));
+    --gradient-success: linear-gradient(135deg, hsl(var(--success-green)), hsl(var(--success-green-light)));
+    --gradient-card: linear-gradient(135deg, hsl(var(--background)), hsl(var(--neutral-50)));
 
-    --sidebar-border: 220 13% 91%;
+    /* Shadows */
+    --shadow-card: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-elevated: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-floating: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Animation */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s ease-out;
   }
 
   .dark {
