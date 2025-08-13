@@ -21,8 +21,8 @@ const Matches = () => {
                          buyer.industries.some(industry => 
                            industry.toLowerCase().includes(searchQuery.toLowerCase())
                          );
-    const matchesIndustry = !selectedIndustry || buyer.industries.includes(selectedIndustry);
-    const matchesBudget = !selectedBudget || buyer.budget === selectedBudget;
+    const matchesIndustry = !selectedIndustry || selectedIndustry === 'all-industries' || buyer.industries.includes(selectedIndustry);
+    const matchesBudget = !selectedBudget || selectedBudget === 'all-budgets' || buyer.budget === selectedBudget;
     
     return matchesSearch && matchesIndustry && matchesBudget;
   });
@@ -55,7 +55,7 @@ const Matches = () => {
     setSelectedBudget('');
   };
 
-  const hasActiveFilters = searchQuery || selectedIndustry || selectedBudget;
+  const hasActiveFilters = searchQuery || (selectedIndustry && selectedIndustry !== 'all-industries') || (selectedBudget && selectedBudget !== 'all-budgets');
 
   return (
     <AppLayout>
@@ -119,7 +119,7 @@ const Matches = () => {
                 <SelectValue placeholder="Industry" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Industries</SelectItem>
+                <SelectItem value="all-industries">All Industries</SelectItem>
                 {industryOptions.map((industry) => (
                   <SelectItem key={industry} value={industry}>
                     {industry}
@@ -134,7 +134,7 @@ const Matches = () => {
                 <SelectValue placeholder="Budget Range" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Budgets</SelectItem>
+                <SelectItem value="all-budgets">All Budgets</SelectItem>
                 {budgetOptions.map((budget) => (
                   <SelectItem key={budget} value={budget}>
                     {budget}
