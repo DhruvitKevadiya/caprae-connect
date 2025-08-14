@@ -145,24 +145,24 @@ const BuyerOnboarding = () => {
                   return (
                     <div className="space-y-6">
                       <Field name="name">
-                        {({ field }: FieldProps) => (
+                        {({ field, meta }: FieldProps) => (
                           <div className="space-y-2">
                             <Label htmlFor="name">Full Name *</Label>
                             <Input
                               {...field}
                               id="name"
                               placeholder="Enter your full name"
-                              className={errors.name && touched.name ? 'border-destructive' : ''}
+                              className={meta.error && meta.touched ? 'border-destructive' : ''}
                             />
-                            {errors.name && touched.name && (
-                              <p className="text-sm text-destructive">{errors.name}</p>
+                            {meta.error && meta.touched && (
+                              <p className="text-sm text-destructive">{meta.error}</p>
                             )}
                           </div>
                         )}
                       </Field>
 
                       <Field name="email">
-                        {({ field }: FieldProps) => (
+                        {({ field, meta }: FieldProps) => (
                           <div className="space-y-2">
                             <Label htmlFor="email">Email Address *</Label>
                             <Input
@@ -170,27 +170,27 @@ const BuyerOnboarding = () => {
                               id="email"
                               type="email"
                               placeholder="Enter your email address"
-                              className={errors.email && touched.email ? 'border-destructive' : ''}
+                              className={meta.error && meta.touched ? 'border-destructive' : ''}
                             />
-                            {errors.email && touched.email && (
-                              <p className="text-sm text-destructive">{errors.email}</p>
+                            {meta.error && meta.touched && (
+                              <p className="text-sm text-destructive">{meta.error}</p>
                             )}
                           </div>
                         )}
                       </Field>
 
                       <Field name="location">
-                        {({ field }: FieldProps) => (
+                        {({ field, meta }: FieldProps) => (
                           <div className="space-y-2">
                             <Label htmlFor="location">Location *</Label>
                             <Input
                               {...field}
                               id="location"
                               placeholder="City, State/Country"
-                              className={errors.location && touched.location ? 'border-destructive' : ''}
+                              className={meta.error && meta.touched ? 'border-destructive' : ''}
                             />
-                            {errors.location && touched.location && (
-                              <p className="text-sm text-destructive">{errors.location}</p>
+                            {meta.error && meta.touched && (
+                              <p className="text-sm text-destructive">{meta.error}</p>
                             )}
                           </div>
                         )}
