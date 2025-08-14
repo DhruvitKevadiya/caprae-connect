@@ -29,8 +29,7 @@ const steps = [
 const SellerOnboarding = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-
-  const initialValues: SellerComplete = {
+  const [formData, setFormData] = useState<SellerComplete>({
     name: '',
     email: '',
     businessName: '',
@@ -40,7 +39,9 @@ const SellerOnboarding = () => {
     employees: '',
     revenue: '',
     askingPrice: ''
-  };
+  });
+
+  const initialValues: SellerComplete = formData;
 
   const getSchemaForStep = (step: number) => {
     switch (step) {
@@ -57,10 +58,10 @@ const SellerOnboarding = () => {
       return {};
     } catch (error: any) {
       const fieldErrors: Record<string, string> = {};
-      if (error.errors) {
-        error.errors.forEach((err: any) => {
-          if (err.path && err.path.length > 0) {
-            fieldErrors[err.path[0]] = err.message;
+      if (error.issues) {
+        error.issues.forEach((issue: any) => {
+          if (issue.path && issue.path.length > 0) {
+            fieldErrors[issue.path[0]] = issue.message;
           }
         });
       }
@@ -106,11 +107,15 @@ const SellerOnboarding = () => {
           initialValues={initialValues}
           validate={validateFormik}
           onSubmit={handleSubmit}
+          enableReinitialize
         >
-          {({ values, errors, touched, setFieldValue, setFieldError }) => {
+          {({ values, errors, touched, setFieldValue, setFieldError, setTouched }) => {
             const handleNext = async () => {
               try {
                 getSchemaForStep(currentStep).parse(values);
+                
+                // Save current step data
+                setFormData({ ...formData, ...values });
                 
                 if (currentStep < steps.length - 1) {
                   setCurrentStep(currentStep + 1);
@@ -118,12 +123,16 @@ const SellerOnboarding = () => {
                   handleSubmit(values);
                 }
               } catch (error: any) {
-                if (error.errors) {
-                  error.errors.forEach((err: any) => {
-                    if (err.path && err.path.length > 0) {
-                      setFieldError(err.path[0], err.message);
+                // Mark all fields as touched to show validation errors
+                const touchedFields: Record<string, boolean> = {};
+                if (error.issues) {
+                  error.issues.forEach((issue: any) => {
+                    if (issue.path && issue.path.length > 0) {
+                      touchedFields[issue.path[0]] = true;
+                      setFieldError(issue.path[0], issue.message);
                     }
                   });
+                  setTouched(touchedFields);
                 }
               }
             };
@@ -142,7 +151,9 @@ const SellerOnboarding = () => {
                       <Field name="name">
                         {({ field, meta }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label htmlFor="name">Full Name *</Label>
+                            <Label htmlFor="name">
+                              Full Name <span className="required-asterisk">*</span>
+                            </Label>
                             <Input
                               {...field}
                               id="name"
@@ -159,7 +170,9 @@ const SellerOnboarding = () => {
                       <Field name="email">
                         {({ field, meta }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label htmlFor="email">Email Address *</Label>
+                            <Label htmlFor="email">
+                              Email Address <span className="required-asterisk">*</span>
+                            </Label>
                             <Input
                               {...field}
                               id="email"
@@ -182,7 +195,9 @@ const SellerOnboarding = () => {
                       <Field name="businessName">
                         {({ field }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label htmlFor="businessName">Business Name *</Label>
+                            <Label htmlFor="businessName">
+                              Business Name <span className="required-asterisk">*</span>
+                            </Label>
                             <Input
                               {...field}
                               id="businessName"
@@ -199,7 +214,9 @@ const SellerOnboarding = () => {
                       <Field name="industry">
                         {({ field }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label>Industry *</Label>
+                            <Label>
+                              Industry <span className="required-asterisk">*</span>
+                            </Label>
                             <Select 
                               value={field.value} 
                               onValueChange={(value) => setFieldValue('industry', value)}
@@ -225,7 +242,9 @@ const SellerOnboarding = () => {
                       <Field name="location">
                         {({ field }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label htmlFor="location">Location *</Label>
+                            <Label htmlFor="location">
+                              Location <span className="required-asterisk">*</span>
+                            </Label>
                             <Input
                               {...field}
                               id="location"
@@ -243,7 +262,9 @@ const SellerOnboarding = () => {
                         <Field name="founded">
                           {({ field }: FieldProps) => (
                             <div className="space-y-2">
-                              <Label htmlFor="founded">Year Founded *</Label>
+                              <Label htmlFor="founded">
+                                Year Founded <span className="required-asterisk">*</span>
+                              </Label>
                               <Input
                                 {...field}
                                 id="founded"
@@ -260,7 +281,9 @@ const SellerOnboarding = () => {
                         <Field name="employees">
                           {({ field }: FieldProps) => (
                             <div className="space-y-2">
-                              <Label>Number of Employees *</Label>
+                              <Label>
+                                Number of Employees <span className="required-asterisk">*</span>
+                              </Label>
                               <Select 
                                 value={field.value} 
                                 onValueChange={(value) => setFieldValue('employees', value)}
@@ -293,7 +316,9 @@ const SellerOnboarding = () => {
                       <Field name="revenue">
                         {({ field }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label htmlFor="revenue">Annual Revenue *</Label>
+                            <Label htmlFor="revenue">
+                              Annual Revenue <span className="required-asterisk">*</span>
+                            </Label>
                             <Input
                               {...field}
                               id="revenue"
@@ -310,7 +335,9 @@ const SellerOnboarding = () => {
                       <Field name="askingPrice">
                         {({ field }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label htmlFor="askingPrice">Asking Price *</Label>
+                            <Label htmlFor="askingPrice">
+                              Asking Price <span className="required-asterisk">*</span>
+                            </Label>
                             <Input
                               {...field}
                               id="askingPrice"

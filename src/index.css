@@ -84,6 +84,10 @@ All colors MUST be HSL.
     /* Animation */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-fast: all 0.15s ease-out;
+
+    /* Form validation */
+    --error: 0 84% 60%;
+    --error-foreground: 0 0% 98%;
   }
 
   .dark {
@@ -132,5 +136,11 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  /* Required field asterisk styling */
+  .required-asterisk {
+    color: hsl(var(--error));
+    font-weight: 500;
   }
 }

@@ -35,8 +35,7 @@ const steps = [
 const BuyerOnboarding = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-
-  const initialValues: BuyerComplete = {
+  const [formData, setFormData] = useState<BuyerComplete>({
     name: '',
     email: '',
     location: '',
@@ -45,7 +44,9 @@ const BuyerOnboarding = () => {
     timeline: '',
     experience: '',
     acquisitionType: []
-  };
+  });
+
+  const initialValues: BuyerComplete = formData;
 
   const getSchemaForStep = (step: number) => {
     switch (step) {
@@ -62,10 +63,10 @@ const BuyerOnboarding = () => {
       return {};
     } catch (error: any) {
       const fieldErrors: Record<string, string> = {};
-      if (error.errors) {
-        error.errors.forEach((err: any) => {
-          if (err.path && err.path.length > 0) {
-            fieldErrors[err.path[0]] = err.message;
+      if (error.issues) {
+        error.issues.forEach((issue: any) => {
+          if (issue.path && issue.path.length > 0) {
+            fieldErrors[issue.path[0]] = issue.message;
           }
         });
       }
@@ -111,11 +112,15 @@ const BuyerOnboarding = () => {
           initialValues={initialValues}
           validate={validateFormik}
           onSubmit={handleSubmit}
+          enableReinitialize
         >
-          {({ values, errors, touched, setFieldValue, setFieldError }) => {
+          {({ values, errors, touched, setFieldValue, setFieldError, setTouched }) => {
             const handleNext = async () => {
               try {
                 getSchemaForStep(currentStep).parse(values);
+                
+                // Save current step data
+                setFormData({ ...formData, ...values });
                 
                 if (currentStep < steps.length - 1) {
                   setCurrentStep(currentStep + 1);
@@ -123,12 +128,16 @@ const BuyerOnboarding = () => {
                   handleSubmit(values);
                 }
               } catch (error: any) {
-                if (error.errors) {
-                  error.errors.forEach((err: any) => {
-                    if (err.path && err.path.length > 0) {
-                      setFieldError(err.path[0], err.message);
+                // Mark all fields as touched to show validation errors
+                const touchedFields: Record<string, boolean> = {};
+                if (error.issues) {
+                  error.issues.forEach((issue: any) => {
+                    if (issue.path && issue.path.length > 0) {
+                      touchedFields[issue.path[0]] = true;
+                      setFieldError(issue.path[0], issue.message);
                     }
                   });
+                  setTouched(touchedFields);
                 }
               }
             };
@@ -147,7 +156,9 @@ const BuyerOnboarding = () => {
                       <Field name="name">
                         {({ field, meta }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label htmlFor="name">Full Name *</Label>
+                            <Label htmlFor="name">
+                              Full Name <span className="required-asterisk">*</span>
+                            </Label>
                             <Input
                               {...field}
                               id="name"
@@ -164,7 +175,9 @@ const BuyerOnboarding = () => {
                       <Field name="email">
                         {({ field, meta }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label htmlFor="email">Email Address *</Label>
+                            <Label htmlFor="email">
+                              Email Address <span className="required-asterisk">*</span>
+                            </Label>
                             <Input
                               {...field}
                               id="email"
@@ -182,7 +195,9 @@ const BuyerOnboarding = () => {
                       <Field name="location">
                         {({ field, meta }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label htmlFor="location">Location *</Label>
+                            <Label htmlFor="location">
+                              Location <span className="required-asterisk">*</span>
+                            </Label>
                             <Input
                               {...field}
                               id="location"
@@ -202,7 +217,9 @@ const BuyerOnboarding = () => {
                   return (
                     <div className="space-y-6">
                       <div className="space-y-3">
-                        <Label>Industries of Interest *</Label>
+                        <Label>
+                          Industries of Interest <span className="required-asterisk">*</span>
+                        </Label>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                           {industryOptions.map((industry) => (
                             <div key={industry} className="flex items-center space-x-2">
@@ -231,7 +248,9 @@ const BuyerOnboarding = () => {
                       <Field name="budget">
                         {({ field }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label>Investment Budget *</Label>
+                            <Label>
+                              Investment Budget <span className="required-asterisk">*</span>
+                            </Label>
                             <Select 
                               value={field.value} 
                               onValueChange={(value) => setFieldValue('budget', value)}
@@ -257,7 +276,9 @@ const BuyerOnboarding = () => {
                       <Field name="timeline">
                         {({ field }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label>Acquisition Timeline *</Label>
+                            <Label>
+                              Acquisition Timeline <span className="required-asterisk">*</span>
+                            </Label>
                             <Select 
                               value={field.value} 
                               onValueChange={(value) => setFieldValue('timeline', value)}
@@ -288,7 +309,9 @@ const BuyerOnboarding = () => {
                       <Field name="experience">
                         {({ field }: FieldProps) => (
                           <div className="space-y-2">
-                            <Label>Investment Experience *</Label>
+                            <Label>
+                              Investment Experience <span className="required-asterisk">*</span>
+                            </Label>
                             <Select 
                               value={field.value} 
                               onValueChange={(value) => setFieldValue('experience', value)}
@@ -312,7 +335,9 @@ const BuyerOnboarding = () => {
                       </Field>
 
                       <div className="space-y-3">
-                        <Label>Acquisition Types of Interest *</Label>
+                        <Label>
+                          Acquisition Types of Interest <span className="required-asterisk">*</span>
+                        </Label>
                         <div className="grid grid-cols-2 gap-3">
                           {acquisitionTypeOptions.map((type) => (
                             <div key={type} className="flex items-center space-x-2">
