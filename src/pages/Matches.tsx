@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProfileCard } from '@/components/common/ProfileCard';
+import { ExpandedProfile } from '@/components/common/ExpandedProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,6 +15,8 @@ const Matches = () => {
   const [selectedIndustry, setSelectedIndustry] = useState('');
   const [selectedBudget, setSelectedBudget] = useState('');
   const [viewType, setViewType] = useState<'buyers' | 'sellers'>('buyers');
+  const [selectedProfile, setSelectedProfile] = useState<any>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Filter buyers based on search and filters
   const filteredBuyers = mockBuyers.filter(buyer => {
@@ -45,8 +48,18 @@ const Matches = () => {
   };
 
   const handleViewProfile = (buyerId: string) => {
-    // In a real app, this would navigate to the full profile page
-    window.location.href = `/profile/${buyerId}`;
+    const buyer = mockBuyers.find(b => b.id === buyerId);
+    setSelectedProfile(buyer);
+    setIsProfileOpen(true);
+  };
+
+  const handleMessage = (buyerId: string) => {
+    const buyer = mockBuyers.find(b => b.id === buyerId);
+    toast({
+      title: 'Message Sent',
+      description: `Opening conversation with ${buyer?.name}`,
+    });
+    // In a real app, navigate to messages
   };
 
   const clearFilters = () => {
@@ -213,6 +226,17 @@ const Matches = () => {
             </Button>
           </div>
         )}
+
+        {/* Expanded Profile Modal */}
+        <ExpandedProfile
+          profile={selectedProfile}
+          type="buyer"
+          isOpen={isProfileOpen}
+          onClose={() => setIsProfileOpen(false)}
+          onAccept={handleAccept}
+          onReject={handleReject}
+          onMessage={handleMessage}
+        />
       </div>
     </AppLayout>
   );

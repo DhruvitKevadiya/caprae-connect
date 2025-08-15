@@ -11,6 +11,7 @@ import SellerOnboarding from "./pages/SellerOnboarding";
 import Matches from "./pages/Matches";
 import Messages from "./pages/Messages";
 import AcquisitionProcess from "./pages/AcquisitionProcess";
+import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/matches" element={<Matches />} />
           <Route path="/messages" element={<Messages />} />
           <Route path="/acquisition-process" element={<AcquisitionProcess />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
