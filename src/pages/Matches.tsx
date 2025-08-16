@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { Search, Filter, Users, TrendingUp } from 'lucide-react';
-import { mockBuyers, industryOptions, budgetOptions } from '@/data/mockData';
+import { mockBuyers, mockSellers, industryOptions, budgetOptions } from '@/data/mockData';
+import { getBuyers, getSellers, acceptBuyer, rejectBuyer, acceptSeller, rejectSeller, getAcceptedBuyers, getRejectedBuyers, getAcceptedSellers, getRejectedSellers } from '@/utils/localStorage';
 
 const Matches = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,47 +18,90 @@ const Matches = () => {
   const [viewType, setViewType] = useState<'buyers' | 'sellers'>('buyers');
   const [selectedProfile, setSelectedProfile] = useState<any>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  // Filter buyers based on search and filters
-  const filteredBuyers = mockBuyers.filter(buyer => {
-    const matchesSearch = buyer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         buyer.industries.some(industry => 
-                           industry.toLowerCase().includes(searchQuery.toLowerCase())
-                         );
-    const matchesIndustry = !selectedIndustry || selectedIndustry === 'all-industries' || buyer.industries.includes(selectedIndustry);
-    const matchesBudget = !selectedBudget || selectedBudget === 'all-budgets' || buyer.budget === selectedBudget;
+  // Get current data from localStorage
+  const allBuyers = [...getBuyers(), ...mockBuyers];
+  const allSellers = [...getSellers(), ...mockSellers];
+  const acceptedBuyerIds = getAcceptedBuyers();
+  const rejectedBuyerIds = getRejectedBuyers();
+  const acceptedSellerIds = getAcceptedSellers();
+  const rejectedSellerIds = getRejectedSellers();
+
+  // Filter based on view type and search criteria
+  const currentData = viewType === 'buyers' ? allBuyers : allSellers;
+  const acceptedIds = viewType === 'buyers' ? acceptedBuyerIds : acceptedSellerIds;
+  const rejectedIds = viewType === 'buyers' ? rejectedBuyerIds : rejectedSellerIds;
+
+  const filteredProfiles = currentData.filter(profile => {
+    // Don't show accepted or rejected profiles
+    if (acceptedIds.includes(profile.id) || rejectedIds.includes(profile.id)) {
+      return false;
+    }
+
+    const matchesSearch = profile.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (viewType === 'buyers' 
+                           ? (profile as any).industries?.some((industry: string) => 
+                               industry.toLowerCase().includes(searchQuery.toLowerCase()))
+                           : (profile as any).industry?.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesIndustry = !selectedIndustry || selectedIndustry === 'all-industries' || 
+                           (viewType === 'buyers' 
+                             ? (profile as any).industries?.includes(selectedIndustry)
+                             : (profile as any).industry === selectedIndustry);
+    
+    const matchesBudget = !selectedBudget || selectedBudget === 'all-budgets' || 
+                         (viewType === 'buyers' ? (profile as any).budget === selectedBudget : true);
     
     return matchesSearch && matchesIndustry && matchesBudget;
   });
 
-  const handleAccept = (buyerId: string) => {
-    const buyer = mockBuyers.find(b => b.id === buyerId);
+  const handleAccept = (profileId: string) => {
+    const profile = currentData.find(p => p.id === profileId);
+    
+    if (viewType === 'buyers') {
+      acceptBuyer(profileId);
+    } else {
+      acceptSeller(profileId);
+    }
+    
+    setRefreshKey(prev => prev + 1);
+    
     toast({
       title: 'Match Accepted!',
-      description: `You've accepted a connection with ${buyer?.name}. They will be notified.`,
+      description: `You've accepted a connection with ${profile?.name}. They will be notified.`,
     });
   };
 
-  const handleReject = (buyerId: string) => {
-    const buyer = mockBuyers.find(b => b.id === buyerId);
+  const handleReject = (profileId: string) => {
+    const profile = currentData.find(p => p.id === profileId);
+    
+    if (viewType === 'buyers') {
+      rejectBuyer(profileId);
+    } else {
+      rejectSeller(profileId);
+    }
+    
+    setRefreshKey(prev => prev + 1);
+    
     toast({
       title: 'Match Passed',
-      description: `You've passed on ${buyer?.name}. This action cannot be undone.`,
+      description: `You've passed on ${profile?.name}. This action cannot be undone.`,
       variant: 'destructive',
     });
   };
 
-  const handleViewProfile = (buyerId: string) => {
-    const buyer = mockBuyers.find(b => b.id === buyerId);
-    setSelectedProfile(buyer);
+  const handleViewProfile = (profileId: string) => {
+    const profile = currentData.find(p => p.id === profileId);
+    setSelectedProfile(profile);
     setIsProfileOpen(true);
   };
 
-  const handleMessage = (buyerId: string) => {
-    const buyer = mockBuyers.find(b => b.id === buyerId);
+  const handleMessage = (profileId: string) => {
+    const profile = currentData.find(p => p.id === profileId);
     toast({
       title: 'Message Sent',
-      description: `Opening conversation with ${buyer?.name}`,
+      description: `Opening conversation with ${profile?.name}`,
     });
     // In a real app, navigate to messages
   };
@@ -172,11 +216,11 @@ const Matches = () => {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-neutral-600">
-              Showing {filteredBuyers.length} of {mockBuyers.length} {viewType}
+              Showing {filteredProfiles.length} of {currentData.length} {viewType}
             </p>
           </div>
 
-          {filteredBuyers.length === 0 ? (
+          {filteredProfiles.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-lg border border-neutral-200">
               <Users className="w-12 h-12 text-neutral-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-neutral-900 mb-2">
@@ -191,17 +235,25 @@ const Matches = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredBuyers.map((buyer) => (
+              {filteredProfiles.map((profile) => (
                 <ProfileCard
-                  key={buyer.id}
-                  type="buyer"
-                  profile={{
-                    id: buyer.id,
-                    name: buyer.name,
-                    industries: buyer.industries,
-                    budget: buyer.budget,
-                    timeline: buyer.timeline,
-                    location: buyer.location
+                  key={profile.id}
+                  type={viewType === 'buyers' ? 'buyer' : 'seller'}
+                  profile={viewType === 'buyers' ? {
+                    id: profile.id,
+                    name: profile.name,
+                    industries: (profile as any).industries,
+                    budget: (profile as any).budget,
+                    timeline: (profile as any).timeline,
+                    location: profile.location
+                  } : {
+                    id: profile.id,
+                    name: profile.name,
+                    businessName: (profile as any).businessName,
+                    industry: (profile as any).industry,
+                    revenue: (profile as any).revenue,
+                    askingPrice: (profile as any).askingPrice,
+                    location: profile.location
                   }}
                   onAccept={handleAccept}
                   onReject={handleReject}
@@ -213,7 +265,7 @@ const Matches = () => {
         </div>
 
         {/* CTA Section */}
-        {filteredBuyers.length > 0 && (
+        {filteredProfiles.length > 0 && (
           <div className="bg-gradient-primary text-primary-foreground p-8 rounded-lg text-center">
             <h3 className="text-xl font-semibold mb-2">
               Ready to connect with more {viewType}?
@@ -230,7 +282,7 @@ const Matches = () => {
         {/* Expanded Profile Modal */}
         <ExpandedProfile
           profile={selectedProfile}
-          type="buyer"
+          type={viewType === 'buyers' ? 'buyer' : 'seller'}
           isOpen={isProfileOpen}
           onClose={() => setIsProfileOpen(false)}
           onAccept={handleAccept}

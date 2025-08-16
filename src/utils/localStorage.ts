@@ -35,6 +35,20 @@ export const saveBuyer = (buyer: Omit<BuyerProfile, 'id'>): BuyerProfile => {
   return newBuyer;
 };
 
+export const removeBuyer = (buyerId: string): void => {
+  const existingBuyers = getBuyers();
+  const updatedBuyers = existingBuyers.filter(buyer => buyer.id !== buyerId);
+  saveToLocalStorage('buyers', updatedBuyers);
+};
+
+export const updateBuyer = (buyerId: string, updates: Partial<BuyerProfile>): void => {
+  const existingBuyers = getBuyers();
+  const updatedBuyers = existingBuyers.map(buyer => 
+    buyer.id === buyerId ? { ...buyer, ...updates } : buyer
+  );
+  saveToLocalStorage('buyers', updatedBuyers);
+};
+
 // Seller-specific utilities
 export const getSellers = (): SellerProfile[] => {
   return getFromLocalStorage<SellerProfile[]>('sellers', []);
@@ -49,6 +63,93 @@ export const saveSeller = (seller: Omit<SellerProfile, 'id'>): SellerProfile => 
   const updatedSellers = [...existingSellers, newSeller];
   saveToLocalStorage('sellers', updatedSellers);
   return newSeller;
+};
+
+export const removeSeller = (sellerId: string): void => {
+  const existingSellers = getSellers();
+  const updatedSellers = existingSellers.filter(seller => seller.id !== sellerId);
+  saveToLocalStorage('sellers', updatedSellers);
+};
+
+export const updateSeller = (sellerId: string, updates: Partial<SellerProfile>): void => {
+  const existingSellers = getSellers();
+  const updatedSellers = existingSellers.map(seller => 
+    seller.id === sellerId ? { ...seller, ...updates } : seller
+  );
+  saveToLocalStorage('sellers', updatedSellers);
+};
+
+// Accepted/Rejected lists
+export const getAcceptedBuyers = (): string[] => {
+  return getFromLocalStorage<string[]>('acceptedBuyers', []);
+};
+
+export const getRejectedBuyers = (): string[] => {
+  return getFromLocalStorage<string[]>('rejectedBuyers', []);
+};
+
+export const acceptBuyer = (buyerId: string): void => {
+  const accepted = getAcceptedBuyers();
+  const rejected = getRejectedBuyers();
+  
+  if (!accepted.includes(buyerId)) {
+    saveToLocalStorage('acceptedBuyers', [...accepted, buyerId]);
+  }
+  
+  // Remove from rejected if it was there
+  if (rejected.includes(buyerId)) {
+    saveToLocalStorage('rejectedBuyers', rejected.filter(id => id !== buyerId));
+  }
+};
+
+export const rejectBuyer = (buyerId: string): void => {
+  const accepted = getAcceptedBuyers();
+  const rejected = getRejectedBuyers();
+  
+  if (!rejected.includes(buyerId)) {
+    saveToLocalStorage('rejectedBuyers', [...rejected, buyerId]);
+  }
+  
+  // Remove from accepted if it was there
+  if (accepted.includes(buyerId)) {
+    saveToLocalStorage('acceptedBuyers', accepted.filter(id => id !== buyerId));
+  }
+};
+
+export const getAcceptedSellers = (): string[] => {
+  return getFromLocalStorage<string[]>('acceptedSellers', []);
+};
+
+export const getRejectedSellers = (): string[] => {
+  return getFromLocalStorage<string[]>('rejectedSellers', []);
+};
+
+export const acceptSeller = (sellerId: string): void => {
+  const accepted = getAcceptedSellers();
+  const rejected = getRejectedSellers();
+  
+  if (!accepted.includes(sellerId)) {
+    saveToLocalStorage('acceptedSellers', [...accepted, sellerId]);
+  }
+  
+  // Remove from rejected if it was there
+  if (rejected.includes(sellerId)) {
+    saveToLocalStorage('rejectedSellers', rejected.filter(id => id !== sellerId));
+  }
+};
+
+export const rejectSeller = (sellerId: string): void => {
+  const accepted = getAcceptedSellers();
+  const rejected = getRejectedSellers();
+  
+  if (!rejected.includes(sellerId)) {
+    saveToLocalStorage('rejectedSellers', [...rejected, sellerId]);
+  }
+  
+  // Remove from accepted if it was there
+  if (accepted.includes(sellerId)) {
+    saveToLocalStorage('acceptedSellers', accepted.filter(id => id !== sellerId));
+  }
 };
 
 // Initialize localStorage with mock data if empty
